@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -38,8 +39,12 @@ public class MainActivity extends AppCompatActivity {
         String scanLog = scanner.getScanLog();
         txtScanOutput.setText(scanLog);
 
+        updateScanBtn(scanner);
+    }
+
+    private void updateScanBtn(FileSystemScanner scanner) {
         Button btnScanDisk = findViewById(R.id.btnScanDisk);
-        btnScanDisk.setText("Scan Disk"+(scanner.wasScanned() ? " (✔)" : ""));
+        btnScanDisk.setText(String.format("Scan Disk%s", scanner.wasScanned() ? " (✔)" : ""));
     }
 
     public void clickScanBtn(View view) {
@@ -47,9 +52,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void clickShowBtn(View view) {
-//        Intent intent = new Intent(this, FileListActivity.class);
-//        intent.putExtra(FileListActivity.activityParam_Path, "[PathRoot]");
-//        startActivity(intent);
+        FileSystemScanner scanner = FileSystemScanner.getInstance();
+        if (scanner.hasStorages()) {
+            Intent intent = new Intent(this, StorageListActivity.class);
+            //intent.putExtra(FileListActivity.activityParam_Path, "[PathRoot]");
+            startActivity(intent);
+        }
     }
 
     public void checkPermissionAndStartScan() {
@@ -70,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == 1) {
@@ -84,7 +92,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startScan(String caller) {
-        TextView txtScanOutput = findViewById(R.id.txtScanOutput);
-        FileSystemScanner.getInstance().scan(new TextViewWriter(txtScanOutput));
+        FileSystemScanner scanner = FileSystemScanner.getInstance();
+        scanner.scan( new TextViewWriter( findViewById(R.id.txtScanOutput) ) );
+        updateScanBtn(scanner);
     }
 }

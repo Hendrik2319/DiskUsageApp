@@ -2,4 +2,5 @@
     <string name="app_name">Disk Usage</string>
     <string name="btnScanDisk">Scan Disk</string>
     <string name="btnShowDisk">Show Found Files</string>
+    <string name="btnBack">Back</string>
 </resources>
