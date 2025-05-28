@@ -94,7 +94,7 @@ public class StorageListActivity extends AppCompatActivity {
             else {
                 holder.txtMarker.setText(" >>");
                 holder.itemView.setOnClickListener(view -> {
-                    // TODO
+                    // TODO: StorageViewActivity
 //                    Intent intent = new Intent(context, FileListActivity.class);
 //                    intent.putExtra(FileListActivity.activityParam_Path, String.format("%s -> %s", path, item));
 //                    context.startActivity(intent);
