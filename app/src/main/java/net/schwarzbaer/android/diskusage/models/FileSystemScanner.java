@@ -1,4 +1,6 @@
-package net.schwarzbaer.android.diskusage;
+package net.schwarzbaer.android.diskusage.models;
+
+import net.schwarzbaer.android.diskusage.views.TextViewWriter;
 
 import java.io.File;
 import java.nio.file.Files;

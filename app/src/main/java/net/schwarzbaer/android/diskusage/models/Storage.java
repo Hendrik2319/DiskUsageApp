@@ -1,6 +1,8 @@
-package net.schwarzbaer.android.diskusage;
+package net.schwarzbaer.android.diskusage.models;
 
 import android.os.StatFs;
+
+import net.schwarzbaer.android.diskusage.views.TextViewWriter;
 
 import java.io.File;
 import java.util.EnumMap;

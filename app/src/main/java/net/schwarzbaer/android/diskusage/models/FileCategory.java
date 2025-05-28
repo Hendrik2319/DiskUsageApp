@@ -1,10 +1,10 @@
-package net.schwarzbaer.android.diskusage;
+package net.schwarzbaer.android.diskusage.models;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
-enum FileCategory {
+public enum FileCategory {
     Images("Images", "bmp", "jpg", "jpeg", "png", "tga", "gif", "tif"),
     Videos("Videos", "mp4", "mpg", "mpeg", "avi", "ogv", "wmv"),
     Audios("Audio Files", "mp3", "wav", "opus", "ogg", "oga", "wma"),
@@ -12,17 +12,17 @@ enum FileCategory {
     Compressed("Compressed Archives", "zip", "7z", "rar", "arj", "tar", "gz"),
     APK("Installation Files (APK)", "apk"),
     Other("Others");
-    private final String label;
+    public final String label;
     private final String[] extensions;
 
-    FileCategory(@NotNull String label, String... extensions) {
+    private FileCategory(@NotNull String label, String... extensions) {
         this.label = label;
         for (int i = 0; i < extensions.length; i++)
             extensions[i] = extensions[i].toLowerCase();
         this.extensions = extensions;
     }
 
-    boolean isFileInCategory(File file) {
+    public boolean isFileInCategory(File file) {
         if (file == null) return false;
         if (file.isFile()) return false;
 

@@ -1,4 +1,4 @@
-package net.schwarzbaer.android.diskusage;
+package net.schwarzbaer.android.diskusage.views;
 
 import android.widget.TextView;
 

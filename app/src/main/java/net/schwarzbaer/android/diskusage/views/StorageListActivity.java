@@ -1,4 +1,4 @@
-package net.schwarzbaer.android.diskusage;
+package net.schwarzbaer.android.diskusage.views;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -15,6 +15,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import net.schwarzbaer.android.diskusage.R;
+import net.schwarzbaer.android.diskusage.models.FileSystemScanner;
+import net.schwarzbaer.android.diskusage.models.Storage;
 
 import java.util.Locale;
 
