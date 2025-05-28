@@ -22,9 +22,18 @@ public enum FileCategory {
         this.extensions = extensions;
     }
 
+    public static FileCategory valueOf_checked(String fileCatName)
+    {
+        try {
+            return FileCategory.valueOf(fileCatName);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public boolean isFileInCategory(File file) {
         if (file == null) return false;
-        if (file.isFile()) return false;
+        if (!file.isFile()) return false;
 
         String name = file.getName();
 

@@ -1,6 +1,7 @@
 package net.schwarzbaer.android.diskusage.views;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,7 +49,7 @@ public class StorageViewActivity extends AppCompatActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         if (storage != null)
-            recyclerView.setAdapter(new MyAdapter(this, storage));
+            recyclerView.setAdapter(new MyAdapter(this, storage, storageIndex));
     }
 
     public void clickBackBtn(View view) {
@@ -76,10 +77,12 @@ public class StorageViewActivity extends AppCompatActivity
         private final static FileCategory[] categories = FileCategory.values();
         private final Context context;
         private final Storage storage;
+        private final int storageIndex;
 
-        private MyAdapter(Context context, @NonNull Storage storage) {
+        private MyAdapter(Context context, @NonNull Storage storage, int storageIndex) {
             this.context = context;
             this.storage = storage;
+            this.storageIndex = storageIndex;
         }
 
         @Override
@@ -104,45 +107,20 @@ public class StorageViewActivity extends AppCompatActivity
             holder.txtFiles.setText(fileCount == 0 ? "no files" : String.format(Locale.ENGLISH, "%d files", fileCount));
 
             long fileSize_Byte = storage.getFileSize_Byte(fileCat);
-            holder.txtSize.setText(fileSize_Byte == 0 ? "----" : getFormatedSize(fileSize_Byte));
+            holder.txtSize.setText(fileSize_Byte == 0 ? "----" : Storage.getFormatedSize(fileSize_Byte));
 
             if (fileCount==0)
                 holder.txtMarker.setText(" X ");
             else {
                 holder.txtMarker.setText(" >>");
                 holder.itemView.setOnClickListener(view -> {
-                    // TODO: FolderViewActivity
-//                    Intent intent = new Intent(context, StorageViewActivity.class);
-//                    intent.putExtra(StorageViewActivity.activityParam_StorageIndex, position);
-//                    context.startActivity(intent);
+                    Intent intent = new Intent(context, FolderViewActivity.class);
+                    intent.putExtra(FolderViewActivity.activityParam_StorageIndex, storageIndex);
+                    intent.putExtra(FolderViewActivity.activityParam_FileCategory, fileCat.name());
+                    intent.putExtra(FolderViewActivity.activityParam_FolderID, FolderViewActivity.activityParamValue_FolderID_Root);
+                    context.startActivity(intent);
                 });
             }
-        }
-
-        private static String getFormatedSize(long size_Byte)
-        {
-            double value = size_Byte;
-            if (value < 1200) return String.format(Locale.ENGLISH, "%d B", size_Byte);
-
-            value /= 1024;
-            if (value < 10  ) return String.format(Locale.ENGLISH, "%1.2f kB", value);
-            if (value < 100 ) return String.format(Locale.ENGLISH, "%1.1f kB", value);
-            if (value < 1000) return String.format(Locale.ENGLISH, "%1.0f kB", value);
-
-            value /= 1024;
-            if (value < 10  ) return String.format(Locale.ENGLISH, "%1.2f MB", value);
-            if (value < 100 ) return String.format(Locale.ENGLISH, "%1.1f MB", value);
-            if (value < 1000) return String.format(Locale.ENGLISH, "%1.0f MB", value);
-
-            value /= 1024;
-            if (value < 10  ) return String.format(Locale.ENGLISH, "%1.2f GB", value);
-            if (value < 100 ) return String.format(Locale.ENGLISH, "%1.1f GB", value);
-            if (value < 1000) return String.format(Locale.ENGLISH, "%1.0f GB", value);
-
-            value /= 1024;
-            if (value < 10  ) return String.format(Locale.ENGLISH, "%1.2f TB", value);
-            if (value < 100 ) return String.format(Locale.ENGLISH, "%1.1f TB", value);
-            return                   String.format(Locale.ENGLISH, "%1.0f TB", value);
         }
     }
 }
