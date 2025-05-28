@@ -5,40 +5,52 @@
     android:layout_height="wrap_content">
 
     <TextView
-        android:id="@+id/txtStorageItemTitle"
+        android:id="@+id/txtFileCategoryTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="@string/demoTxtStorageItemTitle"
+        android:text="@string/demoTxtFileCategoryTitle"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:layout_constraintEnd_toStartOf="@id/txtStorageItemMarker"
+        app:layout_constraintEnd_toStartOf="@id/txtFileCategorySize"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/txtStorageItemComment"
+        android:id="@+id/txtFileCategoryFiles"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="8dp"
-        android:text="@string/demoTxtStorageItemComment"
+        android:text="@string/demoTxtFileCategoryFiles"
         android:textAppearance="@style/TextAppearance.AppCompat.Small"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/txtStorageItemMarker"
+        app:layout_constraintEnd_toStartOf="@id/txtFileCategorySize"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtStorageItemTitle" />
+        app:layout_constraintTop_toBottomOf="@id/txtFileCategoryTitle" />
 
     <TextView
-        android:id="@+id/txtStorageItemMarker"
+        android:id="@+id/txtFileCategorySize"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="@string/demoTxtStorageItemMarker"
+        android:text="@string/demoTxtFileCategorySize"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/txtFileCategoryMarker"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txtFileCategoryMarker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/demoTxtFileCategoryMarker"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -36,6 +36,18 @@ public class Storage {
         return !categoryRoots.isEmpty();
     }
 
+    public long getFileCount(FileCategory fileCat)
+    {
+        ScannedFolder scannedFolder = categoryRoots.get(fileCat);
+        return scannedFolder == null ? 0 : scannedFolder.getTotalFileCount();
+    }
+
+    public long getFileSize_Byte(FileCategory fileCat)
+    {
+        ScannedFolder scannedFolder = categoryRoots.get(fileCat);
+        return scannedFolder == null ? 0 : scannedFolder.getTotalSize_Byte();
+    }
+
     private static String getStorageStats(File folder) {
         try {
             StatFs statFs = new StatFs(folder.getAbsolutePath());
@@ -76,6 +88,10 @@ public class Storage {
                 fileCategory -> categoryRoots.computeIfAbsent(fileCategory, cat -> new ScannedFolder(cat, folder)),
                 textViewWriter
         );
+        categoryRoots.forEach((fileCat, scannedFolder) -> {
+            scannedFolder.getTotalFileCount();
+            scannedFolder.getTotalSize_Byte();
+        });
     }
 
     private static void scanFolder(File folder, Function<FileCategory,ScannedFolder> getParentScannedFolder, TextViewWriter textViewWriter) {
@@ -121,28 +137,59 @@ public class Storage {
         return knownFolders.computeIfAbsent(fileCat, getParentScannedFolder);
     }
 
-    public static class ScannedFolder {
+    public static class ScannedFolder
+    {
 
         private final FileCategory fileCategory;
         private final File folder;
         private final List<File> localFiles;
         private final List<ScannedFolder> subfolders;
+        private Long totalFileCount;
+        private Long totalSize_Byte;
 
-        public ScannedFolder(FileCategory fileCategory, File folder) {
+        public ScannedFolder(FileCategory fileCategory, File folder)
+        {
             this.fileCategory = fileCategory;
             this.folder = folder;
             localFiles = new Vector<>();
             subfolders = new Vector<>();
+            totalFileCount = null;
+            totalSize_Byte = null;
         }
 
-        public void addFile(File file) {
+        public void addFile(File file)
+        {
             localFiles.add(file);
         }
 
-        public ScannedFolder addFolder(File subFolder) {
+        public ScannedFolder addFolder(File subFolder)
+        {
             ScannedFolder scannedFolder = new ScannedFolder(fileCategory, subFolder);
             subfolders.add(scannedFolder);
             return scannedFolder;
+        }
+
+        public long getTotalFileCount()
+        {
+            if (totalFileCount==null)
+            {
+                totalFileCount = (long) localFiles.size();
+                subfolders.forEach(subfolder -> totalFileCount += subfolder.getTotalFileCount());
+            }
+
+            return totalFileCount;
+        }
+
+        public long getTotalSize_Byte()
+        {
+            if (totalSize_Byte==null)
+            {
+                totalSize_Byte = 0L;
+                localFiles.forEach(file -> totalSize_Byte += file.length());
+                subfolders.forEach(subfolder -> totalSize_Byte += subfolder.getTotalSize_Byte());
+            }
+
+            return totalSize_Byte;
         }
     }
 }

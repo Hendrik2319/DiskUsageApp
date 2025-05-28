@@ -39,7 +39,7 @@
                     android:id="@+id/txtScanOutput"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hello World!" />
+                    android:text="@string/dummyTextView" />
             </LinearLayout>
         </ScrollView>
 

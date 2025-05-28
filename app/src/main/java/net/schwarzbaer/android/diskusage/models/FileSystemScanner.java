@@ -168,4 +168,14 @@ public class FileSystemScanner {
         return storages;
     }
 
+    public Storage getStorage(int index)
+    {
+        if (storages==null)
+            return null;
+
+        if (index<0 || index>=storages.length)
+            return null;
+
+        return storages[index];
+    }
 }

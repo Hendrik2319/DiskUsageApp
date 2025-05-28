@@ -3,4 +3,12 @@
     <string name="btnScanDisk">Scan Disk</string>
     <string name="btnShowDisk">Show Found Files</string>
     <string name="btnBack">Back</string>
+    <string name="dummyTextView"><![CDATA[<TextView>]]></string>
+    <string name="demoTxtFileCategoryFiles">42 files</string>
+    <string name="demoTxtFileCategorySize">30 MB</string>
+    <string name="demoTxtFileCategoryMarker"><![CDATA[>>>]]></string>
+    <string name="demoTxtFileCategoryTitle">Category Title</string>
+    <string name="demoTxtStorageItemMarker"><![CDATA[>>>]]></string>
+    <string name="demoTxtStorageItemComment">Comment</string>
+    <string name="demoTxtStorageItemTitle">Storage Title</string>
 </resources>

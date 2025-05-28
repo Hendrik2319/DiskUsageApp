@@ -1,6 +1,6 @@
 package net.schwarzbaer.android.diskusage.models;
 
-import org.jetbrains.annotations.NotNull;
+import androidx.annotation.NonNull;
 
 import java.io.File;
 
@@ -15,7 +15,7 @@ public enum FileCategory {
     public final String label;
     private final String[] extensions;
 
-    private FileCategory(@NotNull String label, String... extensions) {
+    FileCategory(@NonNull String label, String... extensions) {
         this.label = label;
         for (int i = 0; i < extensions.length; i++)
             extensions[i] = extensions[i].toLowerCase();

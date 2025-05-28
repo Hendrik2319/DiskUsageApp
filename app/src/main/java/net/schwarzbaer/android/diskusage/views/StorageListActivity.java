@@ -1,6 +1,7 @@
 package net.schwarzbaer.android.diskusage.views;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,11 +55,11 @@ public class StorageListActivity extends AppCompatActivity {
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
-        public final TextView txtTitle;
-        public final TextView txtComment;
-        public final TextView txtMarker;
+        private final TextView txtTitle;
+        private final TextView txtComment;
+        private final TextView txtMarker;
 
-        public MyViewHolder(View itemView) {
+        private MyViewHolder(View itemView) {
             super(itemView);
             txtTitle   = itemView.findViewById(R.id.txtStorageItemTitle);
             txtComment = itemView.findViewById(R.id.txtStorageItemComment);
@@ -82,14 +83,14 @@ public class StorageListActivity extends AppCompatActivity {
 
         @NonNull
         @Override
-        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_storage_list, parent, false);
             return new MyViewHolder(v);
         }
 
         @Override
-        public void onBindViewHolder(MyViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
             Storage storage = storages[position];
             holder.txtTitle.setText(storage.getPath());
             holder.txtComment.setText(storage.getComment());
@@ -98,10 +99,9 @@ public class StorageListActivity extends AppCompatActivity {
             else {
                 holder.txtMarker.setText(" >>");
                 holder.itemView.setOnClickListener(view -> {
-                    // TODO: StorageViewActivity
-//                    Intent intent = new Intent(context, FileListActivity.class);
-//                    intent.putExtra(FileListActivity.activityParam_Path, String.format("%s -> %s", path, item));
-//                    context.startActivity(intent);
+                    Intent intent = new Intent(context, StorageViewActivity.class);
+                    intent.putExtra(StorageViewActivity.activityParam_StorageIndex, position);
+                    context.startActivity(intent);
                 });
             }
         }
