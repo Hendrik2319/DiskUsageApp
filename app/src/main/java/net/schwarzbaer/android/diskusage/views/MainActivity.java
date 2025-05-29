@@ -46,7 +46,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateScanBtn(FileSystemScanner scanner) {
-        binding.btnScanDisk.setText(String.format("Scan Disk%s", scanner.wasScanned() ? " (✔)" : ""));
+        binding.btnScanDisk.setText( String.format("Scan Disk%s", scanner.wasScanned() ? " (✔)" : "") );
+        binding.btnShowDisk.setEnabled( scanner.wasScanned() );
+    }
+
+    private void setBtnsEnabled(boolean enabled)
+    {
+        binding.btnScanDisk.setEnabled(enabled);
+        binding.btnShowDisk.setEnabled(enabled);
     }
 
     public void clickScanBtn(View view) {
@@ -68,13 +75,13 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
                 startActivity(intent);
             } else {
-                startScan("With granted new permission");
+                startScan();
             }
         } else {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 1);
             } else {
-                startScan("With granted old permission");
+                startScan();
             }
         }
     }
@@ -85,28 +92,22 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == 1) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startScan("After old permission granted");
+                startScan();
             } else {
                 binding.txtScanOutput.setText("<access permission denied> :(");
             }
         }
     }
 
-    private void startScan(String caller) {
+    private void startScan() {
         FileSystemScanner scanner = FileSystemScanner.getInstance();
-        setUIEnabled(false);
+        setBtnsEnabled(false);
         new Thread(() -> {
             scanner.scan( new UiThreadSafeTextViewWriter( binding.txtScanOutput, this::runOnUiThread ) );
             runOnUiThread(()->{
+                setBtnsEnabled(true);
                 updateScanBtn(scanner);
-                setUIEnabled(true);
             });
         }).start();
-    }
-
-    private void setUIEnabled(boolean enabled)
-    {
-        binding.btnScanDisk.setEnabled(enabled);
-        binding.btnShowDisk.setEnabled(enabled);
     }
 }
