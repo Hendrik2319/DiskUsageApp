@@ -53,7 +53,7 @@ public class FolderViewActivity extends AppCompatActivity
                     ? null
                     : folderID == activityParamValue_FolderID_Root
                         ? storage.getRootFolder(fileCat)
-                        : storage.getFolder(fileCat,folderID);
+                        : storage.getFolder(folderID);
 
         TextView txtFolderViewOutput = findViewById(R.id.txtFolderViewOutput);
         txtFolderViewOutput.setText(String.format("Folder: %s", scannedFolder == null ? "<no folder>" : scannedFolder.getPath()));

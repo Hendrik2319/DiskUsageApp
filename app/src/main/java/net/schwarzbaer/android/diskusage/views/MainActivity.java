@@ -96,7 +96,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void startScan(String caller) {
         FileSystemScanner scanner = FileSystemScanner.getInstance();
-        scanner.scan( new TextViewWriter( findViewById(R.id.txtScanOutput) ) );
-        updateScanBtn(scanner);
+        setUIEnabled(false);
+        new Thread(() -> {
+            scanner.scan( new UiThreadSafeTextViewWriter( findViewById(R.id.txtScanOutput), this::runOnUiThread ) );
+            runOnUiThread(()->{
+                updateScanBtn(scanner);
+                setUIEnabled(true);
+            });
+        }).start();
+    }
+
+    private void setUIEnabled(boolean enabled)
+    {
+        findViewById(R.id.btnScanDisk).setEnabled(enabled);
+        findViewById(R.id.btnShowDisk).setEnabled(enabled);
     }
 }

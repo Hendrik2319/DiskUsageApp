@@ -1,6 +1,6 @@
 package net.schwarzbaer.android.diskusage.models;
 
-import net.schwarzbaer.android.diskusage.views.TextViewWriter;
+import net.schwarzbaer.android.diskusage.views.UiThreadSafeTextViewWriter;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -39,7 +39,7 @@ public class FileSystemScanner {
         return Files.isSymbolicLink(path);
     }
 
-    public void scan(TextViewWriter textViewWriter) {
+    public void scan(UiThreadSafeTextViewWriter textViewWriter) {
         storages = determineStorages(textViewWriter);
 
         if (storages!=null) {
@@ -54,7 +54,7 @@ public class FileSystemScanner {
         wasScanned = true;
     }
 
-    private Storage[] determineStorages(TextViewWriter textViewWriter) {
+    private Storage[] determineStorages(UiThreadSafeTextViewWriter textViewWriter) {
         File root = new File("/storage");
 
         if (!root.isDirectory()) {
@@ -106,8 +106,11 @@ public class FileSystemScanner {
         return getStoragesFromFolderList(textViewWriter, storageFolders);
     }
 
-    private Storage[] getStoragesFromFolderList(TextViewWriter textViewWriter, File[] storageFolders) {
-        textViewWriter.setText("%d storages found", storageFolders.length);
+    private Storage[] getStoragesFromFolderList(UiThreadSafeTextViewWriter textViewWriter, File[] storageFolders) {
+        if (storageFolders.length == 1)
+            textViewWriter.setText("1 storage found");
+        else
+            textViewWriter.setText("%d storages found", storageFolders.length);
 
         Storage[] storages = new Storage[storageFolders.length];
         for (int i=0; i<storageFolders.length; i++ ) {
@@ -119,14 +122,14 @@ public class FileSystemScanner {
         return storages;
     }
 
-    private Storage[] getStoragesFromStandardStorage(TextViewWriter textViewWriter, File standardStorage) {
-        textViewWriter.setText("1 storages found");
+    private Storage[] getStoragesFromStandardStorage(UiThreadSafeTextViewWriter textViewWriter, File standardStorage) {
+        textViewWriter.setText("1 storage found");
         textViewWriter.addLine("   Standard storage folder: \"%s\"", standardStorage.getAbsolutePath());
 
         return new Storage[]{ new Storage(standardStorage) };
     }
 
-    private void setStoragesErrorMsg_CantReadStandardStorage(TextViewWriter textViewWriter, File root, File standardStorage) {
+    private void setStoragesErrorMsg_CantReadStandardStorage(UiThreadSafeTextViewWriter textViewWriter, File root, File standardStorage) {
         textViewWriter.setText("Can't read storages.");
         if (!root.canRead())
             textViewWriter.addLine("   Have no read permission for folder \"%s\".", root.getAbsolutePath());
@@ -134,7 +137,7 @@ public class FileSystemScanner {
             textViewWriter.addLine("   Have no read permission for standard storage folder \"%s\".", standardStorage.getAbsolutePath());
     }
 
-    private void setStoragesErrorMsg_StandardStorageIsNoDir(TextViewWriter textViewWriter, File root, File standardStorage) {
+    private void setStoragesErrorMsg_StandardStorageIsNoDir(UiThreadSafeTextViewWriter textViewWriter, File root, File standardStorage) {
         textViewWriter.setText("Can't read storages.");
         if (!root.canRead())
             textViewWriter.addLine("   Have no read permission for folder \"%s\".", root.getAbsolutePath());
@@ -144,7 +147,7 @@ public class FileSystemScanner {
             textViewWriter.addLine("   File entry for standard storage folder \"%s\" exists, but isn't a folder.", standardStorage.getAbsolutePath());
     }
 
-    private void setStoragesErrorMsg_RootIsNoDir(TextViewWriter textViewWriter, File root) {
+    private void setStoragesErrorMsg_RootIsNoDir(UiThreadSafeTextViewWriter textViewWriter, File root) {
         textViewWriter.setText("Can't read storages.");
         if (!root.exists())
             textViewWriter.addLine("   Folder \"%s\" doesn't exist.", root.getAbsolutePath());

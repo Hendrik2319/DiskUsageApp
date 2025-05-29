@@ -4,7 +4,7 @@ import android.os.StatFs;
 
 import androidx.annotation.NonNull;
 
-import net.schwarzbaer.android.diskusage.views.TextViewWriter;
+import net.schwarzbaer.android.diskusage.views.UiThreadSafeTextViewWriter;
 
 import java.io.File;
 import java.util.EnumMap;
@@ -85,7 +85,7 @@ public class Storage {
         }
     }
 
-    public void scanFolder(TextViewWriter textViewWriter) {
+    public void scanFolder(UiThreadSafeTextViewWriter textViewWriter) {
         scanFolder(
                 storageFolder,
                 fileCategory -> categoryRoots.computeIfAbsent(fileCategory, cat -> createScannedFolder(cat, storageFolder)),
@@ -97,7 +97,7 @@ public class Storage {
         });
     }
 
-    private static void scanFolder(File folder, Function<FileCategory,ScannedFolder> getParentScannedFolder, TextViewWriter textViewWriter) {
+    private static void scanFolder(File folder, Function<FileCategory,ScannedFolder> getParentScannedFolder, UiThreadSafeTextViewWriter textViewWriter) {
         Map<FileCategory, ScannedFolder> knownFolders = new EnumMap<>(FileCategory.class);
 
         File[] files = folder.listFiles(FileSystemScanner::acceptFileNoSym);
@@ -114,8 +114,12 @@ public class Storage {
                 if (!typeFound)
                     getScannedFolder(knownFolders, FileCategory.Other, getParentScannedFolder).addFile(file);
             }
-            if (textViewWriter!=null)
-                textViewWriter.addLine("    %d Files added", files.length);
+            if (textViewWriter!=null) {
+                if (files.length == 1)
+                    textViewWriter.addLine("    1 File added");
+                else
+                    textViewWriter.addLine("    %d Files added", files.length);
+            }
         }
 
         File[] subFolders = folder.listFiles(FileSystemScanner::acceptSubFolderNoSym);
@@ -145,7 +149,7 @@ public class Storage {
         return categoryRoots.get(fileCat);
     }
 
-    public ScannedFolder getFolder(FileCategory fileCat, int folderID)
+    public ScannedFolder getFolder(int folderID)
     {
         if (folderID < 0 || folderID >= scannedFolderList.size()) return null;
         return scannedFolderList.get(folderID);
