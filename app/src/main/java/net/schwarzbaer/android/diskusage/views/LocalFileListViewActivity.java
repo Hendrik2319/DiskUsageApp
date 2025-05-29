@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -24,6 +26,7 @@ import net.schwarzbaer.android.diskusage.models.FileSystemScanner;
 import net.schwarzbaer.android.diskusage.models.Storage;
 
 import java.io.File;
+import java.util.List;
 
 public class LocalFileListViewActivity extends AppCompatActivity
 {
@@ -31,6 +34,7 @@ public class LocalFileListViewActivity extends AppCompatActivity
     public static final String activityParam_StorageIndex = "StorageIndex";
     public static final String activityParam_FileCategory = "FileCategory";
     public static final String activityParam_FolderID = "FolderID";
+    public static final String activityParam_SortOrder = "SortOrder";
 
     private ActivityLocalFileListViewBinding binding;
 
@@ -51,6 +55,9 @@ public class LocalFileListViewActivity extends AppCompatActivity
         final int storageIndex = intent.getIntExtra(activityParam_StorageIndex, 0);
         final FileCategory fileCat = FileCategory.valueOf_checked(intent.getStringExtra(activityParam_FileCategory));
         final int folderID = intent.getIntExtra(activityParam_FolderID, Storage.FolderID_Root);
+        final String defaultSortOrderStr = intent.getStringExtra(activityParam_SortOrder);
+        Storage.SortOrder defaultSortOrder = Storage.SortOrder.valueOf_checked(defaultSortOrderStr);
+        if (defaultSortOrder==null) defaultSortOrder = Storage.SortOrder.Original;
 
         Storage storage = FileSystemScanner.getInstance().getStorage(storageIndex);
         Storage.ScannedFolder scannedFolder =
@@ -60,12 +67,34 @@ public class LocalFileListViewActivity extends AppCompatActivity
                         ? storage.getRootFolder(fileCat)
                         : storage.getFolder(folderID);
 
-        binding.txtViewOutput.setText(String.format("Folder: %s", scannedFolder == null ? "<no folder>" : scannedFolder.getPath()));
+        binding.txtViewOutput.setText(String.format("Local Files in Folder: %s", scannedFolder == null ? "<no folder>" : scannedFolder.getPath()));
 
         binding.listFiles.setLayoutManager(new LinearLayoutManager(this));
-        if (scannedFolder != null)
-            binding.listFiles.setAdapter(new MyAdapter(this, storageIndex, fileCat, scannedFolder));
 
+        ArrayAdapter<Storage.SortOrder> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Storage.SortOrder.values());
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spnSelectOrder.setAdapter(spinnerAdapter);
+
+        if (scannedFolder != null) {
+            MyAdapter listAdapter = new MyAdapter(this, storageIndex, fileCat, scannedFolder, defaultSortOrder);
+            binding.listFiles.setAdapter(listAdapter);
+            binding.spnSelectOrder.setSelection( spinnerAdapter.getPosition(defaultSortOrder));
+            binding.spnSelectOrder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+            {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+                {
+                    listAdapter.setOrder(spinnerAdapter.getItem(position));
+                }
+                @Override
+                public void onNothingSelected(AdapterView<?> parent)
+                {
+                    listAdapter.setOrder(Storage.SortOrder.Original);
+                }
+            });
+        }
+        else
+            binding.spnSelectOrder.setEnabled(false);
     }
 
     public void clickBackBtn(View view) {
@@ -92,19 +121,27 @@ public class LocalFileListViewActivity extends AppCompatActivity
         private final FileCategory fileCat;
         @NonNull
         private final Storage.ScannedFolder scannedFolder;
+        private List<File> data;
 
-        private MyAdapter(Context context, int storageIndex, @NonNull FileCategory fileCat, @NonNull Storage.ScannedFolder scannedFolder)
+        private MyAdapter(Context context, int storageIndex, @NonNull FileCategory fileCat, @NonNull Storage.ScannedFolder scannedFolder, @NonNull Storage.SortOrder sortOrder)
         {
             this.context = context;
             this.storageIndex = storageIndex;
             this.fileCat = fileCat;
             this.scannedFolder = scannedFolder;
+            data = this.scannedFolder.getLocalFiles(sortOrder);
+        }
+
+        public void setOrder(@NonNull Storage.SortOrder sortOrder)
+        {
+            data = scannedFolder.getLocalFiles(sortOrder);
+            notifyDataSetChanged();
         }
 
         @Override
         public int getItemCount()
         {
-            return scannedFolder.getLocalFileCount();
+            return data.size();
         }
 
         @NonNull
@@ -120,8 +157,12 @@ public class LocalFileListViewActivity extends AppCompatActivity
         public void onBindViewHolder(@NonNull MyViewHolder holder, int position)
         {
             String strName, strSize;
+            File localFile;
 
-            File localFile = scannedFolder.getLocalFile(position);
+            if (0 <= position && position < data.size())
+                localFile = data.get(position);
+            else
+                localFile = null;
 
             if (localFile!=null)
             {

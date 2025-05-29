@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import net.schwarzbaer.android.diskusage.views.UiThreadSafeTextViewWriter;
 
 import java.io.File;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -14,9 +15,44 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.function.Function;
 
-public class Storage {
+public class Storage
+{
+    public enum SortOrder
+    {
+        Original("Original Order"),
+        BySizeAsc("by Size ˄"),
+        BySizeDesc("by Size ˅"),
+        ByNameAsc("by Name ˄"),
+        ByNameDesc("by Name ˅"),
+        ;
+        private final String label;
+
+        SortOrder(@NonNull String label)
+        {
+            this.label = label;
+        }
+
+        public static SortOrder valueOf_checked(String str)
+        {
+            try {
+                return SortOrder.valueOf(str);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        @NonNull
+        @Override
+        public String toString()
+        {
+            return label;
+        }
+    }
 
     public static final int FolderID_Root = -1;
+    private static final Comparator<String> nameComp = Comparator
+            .<String,String>comparing(String::toLowerCase)
+            .thenComparing(Comparator.naturalOrder());
 
     private final File storageFolder;
     private final String comment;
@@ -285,10 +321,19 @@ public class Storage {
             return subfolders.get(index);
         }
 
-        public File getLocalFile(int index)
+        public List<File> getLocalFiles(SortOrder sortOrder)
         {
-            if (index < 0 || index >= localFiles.size()) return null;
-            return localFiles.get(index);
+            if (sortOrder==null) sortOrder = SortOrder.Original;
+            Vector<File> vec = new Vector<>(localFiles);
+            switch(sortOrder)
+            {
+                case Original: break;
+                case BySizeAsc : vec.sort(Comparator.comparing(File::length)); break;
+                case BySizeDesc: vec.sort(Comparator.comparing(File::length).reversed()); break;
+                case ByNameAsc : vec.sort(Comparator.comparing(File::getName, nameComp)); break;
+                case ByNameDesc: vec.sort(Comparator.comparing(File::getName, nameComp).reversed()); break;
+            }
+            return vec;
         }
 
         public int getFolderID()
