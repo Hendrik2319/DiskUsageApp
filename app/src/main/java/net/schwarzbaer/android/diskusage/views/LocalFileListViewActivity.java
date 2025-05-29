@@ -55,9 +55,9 @@ public class LocalFileListViewActivity extends AppCompatActivity
         final int storageIndex = intent.getIntExtra(activityParam_StorageIndex, 0);
         final FileCategory fileCat = FileCategory.valueOf_checked(intent.getStringExtra(activityParam_FileCategory));
         final int folderID = intent.getIntExtra(activityParam_FolderID, Storage.FolderID_Root);
-        final String defaultSortOrderStr = intent.getStringExtra(activityParam_SortOrder);
-        Storage.SortOrder defaultSortOrder = Storage.SortOrder.valueOf_checked(defaultSortOrderStr);
-        if (defaultSortOrder==null) defaultSortOrder = Storage.SortOrder.Original;
+        final String initialSortOrderStr = intent.getStringExtra(activityParam_SortOrder);
+        Storage.SortOrder initialSortOrder = Storage.SortOrder.valueOf_checked(initialSortOrderStr);
+        if (initialSortOrder==null) initialSortOrder = Storage.SortOrder.Original;
 
         Storage storage = FileSystemScanner.getInstance().getStorage(storageIndex);
         Storage.ScannedFolder scannedFolder =
@@ -67,24 +67,25 @@ public class LocalFileListViewActivity extends AppCompatActivity
                         ? storage.getRootFolder(fileCat)
                         : storage.getFolder(folderID);
 
-        binding.txtViewOutput.setText(String.format("Local Files in Folder: %s", scannedFolder == null ? "<no folder>" : scannedFolder.getPath()));
+        binding.txtFileListViewOutput.setText(String.format("Local Files in Folder: %s", scannedFolder == null ? "<no folder>" : scannedFolder.getPath()));
 
         binding.listFiles.setLayoutManager(new LinearLayoutManager(this));
 
         ArrayAdapter<Storage.SortOrder> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Storage.SortOrder.values());
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spnSelectOrder.setAdapter(spinnerAdapter);
+        binding.spnFileOrder.setAdapter(spinnerAdapter);
 
         if (scannedFolder != null) {
-            MyAdapter listAdapter = new MyAdapter(this, storageIndex, fileCat, scannedFolder, defaultSortOrder);
+            MyAdapter listAdapter = new MyAdapter(scannedFolder, initialSortOrder);
             binding.listFiles.setAdapter(listAdapter);
-            binding.spnSelectOrder.setSelection( spinnerAdapter.getPosition(defaultSortOrder));
-            binding.spnSelectOrder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+            binding.spnFileOrder.setSelection( spinnerAdapter.getPosition(initialSortOrder));
+            binding.spnFileOrder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
             {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
                 {
-                    listAdapter.setOrder(spinnerAdapter.getItem(position));
+                    Storage.SortOrder sortOrder = spinnerAdapter.getItem(position);
+                    listAdapter.setOrder(sortOrder==null ? Storage.SortOrder.Original : sortOrder);
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> parent)
@@ -94,7 +95,7 @@ public class LocalFileListViewActivity extends AppCompatActivity
             });
         }
         else
-            binding.spnSelectOrder.setEnabled(false);
+            binding.spnFileOrder.setEnabled(false);
     }
 
     public void clickBackBtn(View view) {
@@ -115,19 +116,12 @@ public class LocalFileListViewActivity extends AppCompatActivity
 
     public static class MyAdapter extends RecyclerView.Adapter<MyViewHolder>
     {
-        private final Context context;
-        private final int storageIndex;
-        @NonNull
-        private final FileCategory fileCat;
         @NonNull
         private final Storage.ScannedFolder scannedFolder;
         private List<File> data;
 
-        private MyAdapter(Context context, int storageIndex, @NonNull FileCategory fileCat, @NonNull Storage.ScannedFolder scannedFolder, @NonNull Storage.SortOrder sortOrder)
+        private MyAdapter(@NonNull Storage.ScannedFolder scannedFolder, @NonNull Storage.SortOrder sortOrder)
         {
-            this.context = context;
-            this.storageIndex = storageIndex;
-            this.fileCat = fileCat;
             this.scannedFolder = scannedFolder;
             data = this.scannedFolder.getLocalFiles(sortOrder);
         }

@@ -26,14 +26,14 @@
                 android:text="@string/btnBack" />
 
             <Spinner
-                android:id="@+id/spnSelectOrder"
+                android:id="@+id/spnFileOrder"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0" />
         </LinearLayout>
 
         <TextView
-            android:id="@+id/txtViewOutput"
+            android:id="@+id/txtFileListViewOutput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/dummyTextView" />

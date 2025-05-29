@@ -27,7 +27,7 @@ import java.util.Locale;
 
 public class StorageViewActivity extends AppCompatActivity
 {
-    public static String activityParam_StorageIndex = "StorageIndex";
+    public static final String activityParam_StorageIndex = "StorageIndex";
 
     private ActivityStorageViewBinding binding;
 

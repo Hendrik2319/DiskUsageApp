@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -23,13 +25,15 @@ import net.schwarzbaer.android.diskusage.models.FileCategory;
 import net.schwarzbaer.android.diskusage.models.FileSystemScanner;
 import net.schwarzbaer.android.diskusage.models.Storage;
 
+import java.util.List;
 import java.util.Locale;
 
 public class FolderViewActivity extends AppCompatActivity
 {
-    public static String activityParam_StorageIndex = "StorageIndex";
-    public static String activityParam_FileCategory = "FileCategory";
-    public static String activityParam_FolderID = "FolderID";
+    public static final String activityParam_StorageIndex = "StorageIndex";
+    public static final String activityParam_FileCategory = "FileCategory";
+    public static final String activityParam_FolderID = "FolderID";
+    public static final String activityParam_SortOrder = "SortOrder";
 
     private ActivityFolderViewBinding binding;
 
@@ -50,6 +54,9 @@ public class FolderViewActivity extends AppCompatActivity
         final int storageIndex = intent.getIntExtra(activityParam_StorageIndex, 0);
         final FileCategory fileCat = FileCategory.valueOf_checked(intent.getStringExtra(activityParam_FileCategory));
         final int folderID = intent.getIntExtra(activityParam_FolderID, Storage.FolderID_Root);
+        final String initialSortOrderStr = intent.getStringExtra(activityParam_SortOrder);
+        Storage.SortOrder initialSortOrder = Storage.SortOrder.valueOf_checked(initialSortOrderStr);
+        if (initialSortOrder==null) initialSortOrder = Storage.SortOrder.Original;
 
         Storage storage = FileSystemScanner.getInstance().getStorage(storageIndex);
         Storage.ScannedFolder scannedFolder =
@@ -62,8 +69,32 @@ public class FolderViewActivity extends AppCompatActivity
         binding.txtFolderViewOutput.setText(String.format("Folder: %s", scannedFolder == null ? "<no folder>" : scannedFolder.getPath()));
 
         binding.listFolders.setLayoutManager(new LinearLayoutManager(this));
-        if (scannedFolder != null)
-            binding.listFolders.setAdapter(new MyAdapter(this, storageIndex, fileCat, scannedFolder, folderID));
+
+        ArrayAdapter<Storage.SortOrder> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, Storage.SortOrder.values());
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spnFolderOrder.setAdapter(spinnerAdapter);
+
+        if (scannedFolder != null) {
+            MyAdapter listAdapter = new MyAdapter(this, storageIndex, fileCat, scannedFolder, folderID, initialSortOrder);
+            binding.listFolders.setAdapter(listAdapter);
+            binding.spnFolderOrder.setSelection( spinnerAdapter.getPosition(initialSortOrder));
+            binding.spnFolderOrder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+            {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+                {
+                    Storage.SortOrder sortOrder = spinnerAdapter.getItem(position);
+                    listAdapter.setOrder(sortOrder==null ? Storage.SortOrder.Original : sortOrder);
+                }
+                @Override
+                public void onNothingSelected(AdapterView<?> parent)
+                {
+                    listAdapter.setOrder(Storage.SortOrder.Original);
+                }
+            });
+        }
+        else
+            binding.spnFolderOrder.setEnabled(false);
     }
 
     public void clickBackBtn(View view) {
@@ -95,21 +126,33 @@ public class FolderViewActivity extends AppCompatActivity
         @NonNull
         private final Storage.ScannedFolder scannedFolder;
         private final int folderID;
+        @NonNull
+        private Storage.SortOrder sortOrder;
+        private List<Storage.ScannedFolder> subFolders;
 
-        private MyAdapter(Context context, int storageIndex, @NonNull FileCategory fileCat, @NonNull Storage.ScannedFolder scannedFolder, int folderID)
+        private MyAdapter(Context context, int storageIndex, @NonNull FileCategory fileCat, @NonNull Storage.ScannedFolder scannedFolder, int folderID, @NonNull Storage.SortOrder sortOrder)
         {
             this.context = context;
             this.storageIndex = storageIndex;
             this.fileCat = fileCat;
             this.scannedFolder = scannedFolder;
             this.folderID = folderID;
+            this.sortOrder = sortOrder;
+            subFolders = this.scannedFolder.getSubFolders(this.sortOrder);
+        }
+
+        public void setOrder(Storage.SortOrder sortOrder)
+        {
+            this.sortOrder = sortOrder;
+            subFolders = scannedFolder.getSubFolders(this.sortOrder);
+            notifyDataSetChanged();
         }
 
         @Override
         public int getItemCount()
         {
             int fileCount = scannedFolder.getLocalFileCount();
-            int folderCount = scannedFolder.getLocalFolderCount();
+            int folderCount = subFolders.size();
             return folderCount + (fileCount==0 ? 0 : 1);
         }
 
@@ -139,13 +182,20 @@ public class FolderViewActivity extends AppCompatActivity
                     intent.putExtra(LocalFileListViewActivity.activityParam_StorageIndex, storageIndex);
                     intent.putExtra(LocalFileListViewActivity.activityParam_FileCategory, fileCat.name());
                     intent.putExtra(LocalFileListViewActivity.activityParam_FolderID, folderID);
+                    intent.putExtra(LocalFileListViewActivity.activityParam_SortOrder, sortOrder.name());
                     context.startActivity(intent);
                 };
             }
             else
             {
                 int folderIndex = position - (localFileCount!=0 ? 1 : 0);
-                Storage.ScannedFolder scannedSubFolder = scannedFolder.getSubFolder(folderIndex);
+                Storage.ScannedFolder scannedSubFolder;
+
+                if (0 <= folderIndex && folderIndex < subFolders.size())
+                    scannedSubFolder = subFolders.get(folderIndex);
+                else
+                    scannedSubFolder = null;
+
                 if (scannedSubFolder != null) {
                     long fileCount     = scannedSubFolder.getTotalFileCount();
                     long fileSize_Byte = scannedSubFolder.getTotalSize_Byte();
@@ -158,6 +208,7 @@ public class FolderViewActivity extends AppCompatActivity
                         intent.putExtra(FolderViewActivity.activityParam_StorageIndex, storageIndex);
                         intent.putExtra(FolderViewActivity.activityParam_FileCategory, fileCat.name());
                         intent.putExtra(FolderViewActivity.activityParam_FolderID, subFolderID);
+                        intent.putExtra(FolderViewActivity.activityParam_SortOrder, sortOrder.name());
                         context.startActivity(intent);
                     };
                 }

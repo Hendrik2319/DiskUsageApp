@@ -310,15 +310,19 @@ public class Storage
             return localFiles.size();
         }
 
-        public int getLocalFolderCount()
+        public List<ScannedFolder> getSubFolders(SortOrder sortOrder)
         {
-            return subfolders.size();
-        }
-
-        public ScannedFolder getSubFolder(int index)
-        {
-            if (index < 0 || index >= subfolders.size()) return null;
-            return subfolders.get(index);
+            if (sortOrder==null) sortOrder = SortOrder.Original;
+            Vector<ScannedFolder> vec = new Vector<>(subfolders);
+            switch(sortOrder)
+            {
+                case Original: break;
+                case BySizeAsc : vec.sort(Comparator.comparing(ScannedFolder::getTotalSize_Byte)); break;
+                case BySizeDesc: vec.sort(Comparator.comparing(ScannedFolder::getTotalSize_Byte).reversed()); break;
+                case ByNameAsc : vec.sort(Comparator.comparing(ScannedFolder::getName, nameComp)); break;
+                case ByNameDesc: vec.sort(Comparator.comparing(ScannedFolder::getName, nameComp).reversed()); break;
+            }
+            return vec;
         }
 
         public List<File> getLocalFiles(SortOrder sortOrder)
