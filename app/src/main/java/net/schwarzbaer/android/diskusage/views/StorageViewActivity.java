@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.schwarzbaer.android.diskusage.R;
+import net.schwarzbaer.android.diskusage.databinding.ActivityStorageViewBinding;
 import net.schwarzbaer.android.diskusage.models.FileCategory;
 import net.schwarzbaer.android.diskusage.models.FileSystemScanner;
 import net.schwarzbaer.android.diskusage.models.Storage;
@@ -28,12 +29,15 @@ public class StorageViewActivity extends AppCompatActivity
 {
     public static String activityParam_StorageIndex = "StorageIndex";
 
+    private ActivityStorageViewBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        binding = ActivityStorageViewBinding.inflate(getLayoutInflater());
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_storage_view);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -42,14 +46,11 @@ public class StorageViewActivity extends AppCompatActivity
         int storageIndex = getIntent().getIntExtra(activityParam_StorageIndex, 0);
         Storage storage = FileSystemScanner.getInstance().getStorage(storageIndex);
 
-        TextView txtStorageViewOutput = findViewById(R.id.txtStorageViewOutput);
-        txtStorageViewOutput.setText(String.format("Storage: %s", storage == null ? "<no storage>" : storage.getPath()));
+        binding.txtStorageViewOutput.setText(String.format("Storage: %s", storage == null ? "<no storage>" : storage.getPath()));
 
-        RecyclerView recyclerView = findViewById(R.id.listFileCategories);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
+        binding.listFileCategories.setLayoutManager(new LinearLayoutManager(this));
         if (storage != null)
-            recyclerView.setAdapter(new MyAdapter(this, storage, storageIndex));
+            binding.listFileCategories.setAdapter(new MyAdapter(this, storage, storageIndex));
     }
 
     public void clickBackBtn(View view) {

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.schwarzbaer.android.diskusage.R;
+import net.schwarzbaer.android.diskusage.databinding.ActivityStorageListBinding;
 import net.schwarzbaer.android.diskusage.models.FileSystemScanner;
 import net.schwarzbaer.android.diskusage.models.Storage;
 
@@ -25,28 +26,28 @@ import java.util.Locale;
 
 public class StorageListActivity extends AppCompatActivity {
 
+    private ActivityStorageListBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        binding = ActivityStorageListBinding.inflate(getLayoutInflater());
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_storage_list);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        TextView txtStorageListOutput = findViewById(R.id.txtStorageListOutput);
-
-        RecyclerView recyclerView = findViewById(R.id.listStorages);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.listStorages.setLayoutManager(new LinearLayoutManager(this));
 
         Storage[] storages = FileSystemScanner.getInstance().getStorages();
         if (storages == null) {
-            txtStorageListOutput.setText("No Storages found");
+            binding.txtStorageListOutput.setText("No Storages found");
         } else {
-            txtStorageListOutput.setText(String.format(Locale.ENGLISH, "%d Storages found", storages.length));
-            recyclerView.setAdapter( new MyAdapter(this, storages) );
+            binding.txtStorageListOutput.setText(String.format(Locale.ENGLISH, "%d Storages found", storages.length));
+            binding.listStorages.setAdapter( new MyAdapter(this, storages) );
         }
     }
 

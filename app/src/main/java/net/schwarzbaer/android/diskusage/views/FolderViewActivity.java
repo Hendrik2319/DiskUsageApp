@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.schwarzbaer.android.diskusage.R;
+import net.schwarzbaer.android.diskusage.databinding.ActivityFolderViewBinding;
 import net.schwarzbaer.android.diskusage.models.FileCategory;
 import net.schwarzbaer.android.diskusage.models.FileSystemScanner;
 import net.schwarzbaer.android.diskusage.models.Storage;
@@ -30,21 +31,25 @@ public class FolderViewActivity extends AppCompatActivity
     public static String activityParam_FileCategory = "FileCategory";
     public static String activityParam_FolderID = "FolderID";
 
+    private ActivityFolderViewBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        binding = ActivityFolderViewBinding.inflate(getLayoutInflater());
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_folder_view);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        final int storageIndex = getIntent().getIntExtra(activityParam_StorageIndex, 0);
-        final FileCategory fileCat = FileCategory.valueOf_checked(getIntent().getStringExtra(activityParam_FileCategory));
-        final int folderID = getIntent().getIntExtra(activityParam_FolderID, Storage.FolderID_Root);
+        Intent intent = getIntent();
+        final int storageIndex = intent.getIntExtra(activityParam_StorageIndex, 0);
+        final FileCategory fileCat = FileCategory.valueOf_checked(intent.getStringExtra(activityParam_FileCategory));
+        final int folderID = intent.getIntExtra(activityParam_FolderID, Storage.FolderID_Root);
 
         Storage storage = FileSystemScanner.getInstance().getStorage(storageIndex);
         Storage.ScannedFolder scannedFolder =
@@ -54,14 +59,11 @@ public class FolderViewActivity extends AppCompatActivity
                         ? storage.getRootFolder(fileCat)
                         : storage.getFolder(folderID);
 
-        TextView txtFolderViewOutput = findViewById(R.id.txtFolderViewOutput);
-        txtFolderViewOutput.setText(String.format("Folder: %s", scannedFolder == null ? "<no folder>" : scannedFolder.getPath()));
+        binding.txtFolderViewOutput.setText(String.format("Folder: %s", scannedFolder == null ? "<no folder>" : scannedFolder.getPath()));
 
-        RecyclerView recyclerView = findViewById(R.id.listFolders);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
+        binding.listFolders.setLayoutManager(new LinearLayoutManager(this));
         if (scannedFolder != null)
-            recyclerView.setAdapter(new MyAdapter(this, storageIndex, fileCat, scannedFolder, folderID));
+            binding.listFolders.setAdapter(new MyAdapter(this, storageIndex, fileCat, scannedFolder, folderID));
     }
 
     public void clickBackBtn(View view) {

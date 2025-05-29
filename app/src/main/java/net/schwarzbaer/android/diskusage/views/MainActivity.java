@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -20,17 +18,20 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import net.schwarzbaer.android.diskusage.R;
+import net.schwarzbaer.android.diskusage.databinding.ActivityMainBinding;
 import net.schwarzbaer.android.diskusage.models.FileSystemScanner;
 
 public class MainActivity extends AppCompatActivity {
 
+    private ActivityMainBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        setContentView(binding.getRoot());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -38,16 +39,14 @@ public class MainActivity extends AppCompatActivity {
 
         FileSystemScanner scanner = FileSystemScanner.getInstance();
 
-        TextView txtScanOutput = findViewById(R.id.txtScanOutput);
         String scanLog = scanner.getScanLog();
-        txtScanOutput.setText(scanLog);
+        binding.txtScanOutput.setText(scanLog);
 
         updateScanBtn(scanner);
     }
 
     private void updateScanBtn(FileSystemScanner scanner) {
-        Button btnScanDisk = findViewById(R.id.btnScanDisk);
-        btnScanDisk.setText(String.format("Scan Disk%s", scanner.wasScanned() ? " (✔)" : ""));
+        binding.btnScanDisk.setText(String.format("Scan Disk%s", scanner.wasScanned() ? " (✔)" : ""));
     }
 
     public void clickScanBtn(View view) {
@@ -88,8 +87,7 @@ public class MainActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startScan("After old permission granted");
             } else {
-                TextView txtScanOutput = findViewById(R.id.txtScanOutput);
-                txtScanOutput.setText("<access permission denied> :(");
+                binding.txtScanOutput.setText("<access permission denied> :(");
             }
         }
     }
@@ -98,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         FileSystemScanner scanner = FileSystemScanner.getInstance();
         setUIEnabled(false);
         new Thread(() -> {
-            scanner.scan( new UiThreadSafeTextViewWriter( findViewById(R.id.txtScanOutput), this::runOnUiThread ) );
+            scanner.scan( new UiThreadSafeTextViewWriter( binding.txtScanOutput, this::runOnUiThread ) );
             runOnUiThread(()->{
                 updateScanBtn(scanner);
                 setUIEnabled(true);
@@ -108,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUIEnabled(boolean enabled)
     {
-        findViewById(R.id.btnScanDisk).setEnabled(enabled);
-        findViewById(R.id.btnShowDisk).setEnabled(enabled);
+        binding.btnScanDisk.setEnabled(enabled);
+        binding.btnShowDisk.setEnabled(enabled);
     }
 }
