@@ -16,6 +16,8 @@ import java.util.function.Function;
 
 public class Storage {
 
+    public static final int FolderID_Root = -1;
+
     private final File storageFolder;
     private final String comment;
     private final Map<FileCategory, ScannedFolder> categoryRoots;
@@ -277,10 +279,16 @@ public class Storage {
             return subfolders.size();
         }
 
-        public ScannedFolder getSubFolder(int folderIndex)
+        public ScannedFolder getSubFolder(int index)
         {
-            if (folderIndex < 0 || folderIndex >= subfolders.size()) return null;
-            return subfolders.get(folderIndex);
+            if (index < 0 || index >= subfolders.size()) return null;
+            return subfolders.get(index);
+        }
+
+        public File getLocalFile(int index)
+        {
+            if (index < 0 || index >= localFiles.size()) return null;
+            return localFiles.get(index);
         }
 
         public int getFolderID()

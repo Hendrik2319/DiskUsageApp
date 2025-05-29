@@ -117,7 +117,7 @@ public class StorageViewActivity extends AppCompatActivity
                     Intent intent = new Intent(context, FolderViewActivity.class);
                     intent.putExtra(FolderViewActivity.activityParam_StorageIndex, storageIndex);
                     intent.putExtra(FolderViewActivity.activityParam_FileCategory, fileCat.name());
-                    intent.putExtra(FolderViewActivity.activityParam_FolderID, FolderViewActivity.activityParamValue_FolderID_Root);
+                    intent.putExtra(FolderViewActivity.activityParam_FolderID, Storage.FolderID_Root);
                     context.startActivity(intent);
                 });
             }

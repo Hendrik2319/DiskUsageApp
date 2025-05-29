@@ -29,7 +29,6 @@ public class FolderViewActivity extends AppCompatActivity
     public static String activityParam_StorageIndex = "StorageIndex";
     public static String activityParam_FileCategory = "FileCategory";
     public static String activityParam_FolderID = "FolderID";
-    public static int activityParamValue_FolderID_Root = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -45,13 +44,13 @@ public class FolderViewActivity extends AppCompatActivity
 
         final int storageIndex = getIntent().getIntExtra(activityParam_StorageIndex, 0);
         final FileCategory fileCat = FileCategory.valueOf_checked(getIntent().getStringExtra(activityParam_FileCategory));
-        final int folderID = getIntent().getIntExtra(activityParam_FolderID, activityParamValue_FolderID_Root);
+        final int folderID = getIntent().getIntExtra(activityParam_FolderID, Storage.FolderID_Root);
 
         Storage storage = FileSystemScanner.getInstance().getStorage(storageIndex);
         Storage.ScannedFolder scannedFolder =
                 storage==null || fileCat==null
                     ? null
-                    : folderID == activityParamValue_FolderID_Root
+                    : folderID == Storage.FolderID_Root
                         ? storage.getRootFolder(fileCat)
                         : storage.getFolder(folderID);
 
@@ -62,7 +61,7 @@ public class FolderViewActivity extends AppCompatActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         if (scannedFolder != null)
-            recyclerView.setAdapter(new MyAdapter(this, storageIndex, fileCat, scannedFolder));
+            recyclerView.setAdapter(new MyAdapter(this, storageIndex, fileCat, scannedFolder, folderID));
     }
 
     public void clickBackBtn(View view) {
@@ -93,13 +92,15 @@ public class FolderViewActivity extends AppCompatActivity
         private final FileCategory fileCat;
         @NonNull
         private final Storage.ScannedFolder scannedFolder;
+        private final int folderID;
 
-        private MyAdapter(Context context, int storageIndex, @NonNull FileCategory fileCat, @NonNull Storage.ScannedFolder scannedFolder)
+        private MyAdapter(Context context, int storageIndex, @NonNull FileCategory fileCat, @NonNull Storage.ScannedFolder scannedFolder, int folderID)
         {
             this.context = context;
             this.storageIndex = storageIndex;
             this.fileCat = fileCat;
             this.scannedFolder = scannedFolder;
+            this.folderID = folderID;
         }
 
         @Override
@@ -132,12 +133,11 @@ public class FolderViewActivity extends AppCompatActivity
                 strFiles = localFileCount == 1 ? "1 file" : String.format(Locale.ENGLISH, "%d files", localFileCount);
                 strSize = Storage.getFormatedSize(scannedFolder.getLocalFilesSize_Byte());
                 onClickListener = view -> {
-                    // TODO: LocalFileListViewActivity
-//                    Intent intent = new Intent(context, FolderViewActivity.class);
-//                    intent.putExtra(FolderViewActivity.activityParam_StorageIndex, storageIndex);
-//                    intent.putExtra(FolderViewActivity.activityParam_FileCategory, fileCat.name());
-//                    intent.putExtra(FolderViewActivity.activityParam_FolderID, FolderViewActivity.activityParamValue_FolderID_Root);
-//                    context.startActivity(intent);
+                    Intent intent = new Intent(context, LocalFileListViewActivity.class);
+                    intent.putExtra(LocalFileListViewActivity.activityParam_StorageIndex, storageIndex);
+                    intent.putExtra(LocalFileListViewActivity.activityParam_FileCategory, fileCat.name());
+                    intent.putExtra(LocalFileListViewActivity.activityParam_FolderID, folderID);
+                    context.startActivity(intent);
                 };
             }
             else
@@ -147,7 +147,7 @@ public class FolderViewActivity extends AppCompatActivity
                 if (scannedSubFolder != null) {
                     long fileCount     = scannedSubFolder.getTotalFileCount();
                     long fileSize_Byte = scannedSubFolder.getTotalSize_Byte();
-                    int folderID       = scannedSubFolder.getFolderID();
+                    int subFolderID    = scannedSubFolder.getFolderID();
                     strTitle = scannedSubFolder.getName();
                     strFiles = fileCount == 0 ? "no files" : fileCount == 1 ? "1 file" : String.format(Locale.ENGLISH, "%d files", fileCount);
                     strSize = fileSize_Byte == 0 ? "----" : Storage.getFormatedSize(fileSize_Byte);
@@ -155,7 +155,7 @@ public class FolderViewActivity extends AppCompatActivity
                         Intent intent = new Intent(context, FolderViewActivity.class);
                         intent.putExtra(FolderViewActivity.activityParam_StorageIndex, storageIndex);
                         intent.putExtra(FolderViewActivity.activityParam_FileCategory, fileCat.name());
-                        intent.putExtra(FolderViewActivity.activityParam_FolderID, folderID);
+                        intent.putExtra(FolderViewActivity.activityParam_FolderID, subFolderID);
                         context.startActivity(intent);
                     };
                 }
